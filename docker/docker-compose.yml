@@ -1,0 +1,37 @@
+version: '3.8'
+services:
+  minio:
+    image: minio/minio:latest
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data
+    ports:
+      - '9000:9000'
+    volumes:
+      - minio_data:/data
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ecom
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+  airflow:
+    image: apache/airflow:2.6.3
+    environment:
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+    volumes:
+      - ../src:/opt/airflow/dags
+      - ../src/data_gen:/opt/airflow/data
+    ports:
+      - '8080:8080'
+    depends_on:
+      - minio
+      - postgres
+volumes:
+  minio_data:
+  pgdata:
